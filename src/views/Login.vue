@@ -1,11 +1,14 @@
 <script>
+import axios from 'axios'
+import Msg from '../components/Msg.vue'
+
 export default {
   name: 'Login',
+  components: { Msg },
   data () {
     return {
       img: 1,
       parent: null,
-      // Добавил модели для полей, чтобы потом было удобно отправлять данные
       form: {
         email: '',
         password: ''
@@ -20,137 +23,224 @@ export default {
     randomIntFromInterval (min, max) {
       return Math.floor(Math.random() * (max - min + 1) + min)
     },
-    doLogin () {}
+    toFormData (obj) {
+      const fd = new FormData()
+      for (let key in obj) {
+        fd.append(key, obj[key])
+      }
+      return fd
+    },
+    doLogin () {
+      const self = this
+
+      if (!this.form.email || !this.form.password) {
+        if (this.$refs.msg) this.$refs.msg.alertFun('Please fill all fields')
+        else alert('Please fill all fields')
+        return
+      }
+
+      const data = this.toFormData(this.form)
+
+      axios
+        .post(this.parent.url + '/site/login', data)
+        .then(response => {
+          if (response.data.error) {
+            if (self.$refs.msg) self.$refs.msg.alertFun(response.data.error)
+            else alert(response.data.error)
+          } else if (response.data.user) {
+            self.parent.user = response.data.user
+            localStorage.setItem('user', JSON.stringify(self.parent.user))
+            self.$router.push('/campaigns')
+          }
+        })
+        .catch(error => {
+          console.error('Login error:', error)
+          if (self.$refs.msg) self.$refs.msg.alertFun('Network Error')
+        })
+    }
   }
 }
 </script>
 
 <template>
-  <div class="login-page">
-    <div class="login-box">
-      <h1 class="title">Sign In</h1>
-      <p class="subtitle">Welcome back to the system</p>
+  <div class="login-container">
+    <Msg ref="msg" />
 
-      <form @submit.prevent="doLogin">
-        <div class="input-group">
-          <label>Email</label>
-          <input
-            v-model="form.email"
-            type="email"
-            placeholder="name@example.com"
-            required
-          />
+    <div id="left-area" class="image-side">
+      <img
+        v-if="parent"
+        :src="`${parent.url}/app/views/images/Cover_${img}.jpg`"
+        class="bg-cover"
+        alt="Cover"
+      />
+    </div>
+
+    <div id="right-area" class="form-side">
+      <div class="login-header">
+        <div class="title-logo-wrapper">
+          <div class="title">
+            <h1>Affiliate Sign in</h1>
+          </div>
+          <div class="logo">
+            <img
+              v-if="parent"
+              :src="`${parent.url}/app/views/images/logo.svg`"
+              alt="Logo"
+            />
+          </div>
         </div>
+      </div>
 
-        <div class="input-group">
-          <label>Password</label>
-          <input
-            v-model="form.password"
-            type="password"
-            placeholder="••••••••"
-            required
-          />
-        </div>
-
-        <button type="submit" class="btn-primary">
-          <i class="fas fa-sign-in-alt"></i> Login
-        </button>
-      </form>
-
-      <div class="debug-info">
-        <small>Session ID: #{{ img }}</small>
+      <div class="form-wrapper">
+        <form @submit.prevent="doLogin">
+          <div class="row">
+            <label>Email</label>
+            <input
+              type="email"
+              v-model="form.email"
+              required
+              placeholder="email@example.com"
+            />
+          </div>
+          <div class="row">
+            <label>Password</label>
+            <input
+              type="password"
+              v-model="form.password"
+              required
+              autocomplete="on"
+              placeholder="********"
+            />
+          </div>
+          <div class="row btn-row">
+            <button class="btn-success">SIGN IN</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.login-page {
+.login-container {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background-color: #f3f4f6;
-  font-family: 'Segoe UI', sans-serif;
-}
-
-.login-box {
-  background: white;
+  height: 100vh;
   width: 100%;
-  max-width: 400px;
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  font-family: 'Roboto', 'Segoe UI', sans-serif;
 }
 
-.title {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 600;
-  color: #111827;
-  text-align: center;
+.image-side {
+  width: 85%;
+  position: relative;
+  background-color: #000;
 }
 
-.subtitle {
-  margin-top: 8px;
-  margin-bottom: 30px;
-  font-size: 14px;
-  color: #6b7280;
-  text-align: center;
-}
-
-.input-group {
-  margin-bottom: 20px;
-}
-
-.input-group label {
+.bg-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   display: block;
-  margin-bottom: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #374151;
 }
 
-.input-group input {
+.form-side {
+  width: 50%;
+  background-color: #f4f6f8;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.login-header {
+  display: flex;
+  background-color: #333333;
+  color: #fff;
+  padding: 15px 30px;
   width: 100%;
-  padding: 10px 12px;
-  font-size: 15px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
   box-sizing: border-box;
 }
 
-.input-group input:focus {
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+.title-logo-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
 }
 
-.btn-primary {
-  width: 100%;
-  padding: 12px;
-  background-color: #4f46e5;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
+.login-header h1 {
+  font-size: 18px;
+  margin: 0;
   font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
+}
+
+.login-header .logo img {
+  height: 30px;
+  width: auto;
+}
+
+.form-wrapper {
+  flex-grow: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  padding: 20px;
 }
 
-.btn-primary:hover {
-  background-color: #4338ca;
+.form-wrapper form {
+  text-align: right;
+  width: 100%;
+  max-width: 400px;
 }
 
-.debug-info {
-  margin-top: 20px;
-  text-align: center;
-  color: #9ca3af;
+.row {
+  margin-bottom: 20px;
+}
+
+.row label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  font-size: 14px;
+  color: #333;
+}
+
+.row input {
+  width: 100%;
+  padding: 12px 15px;
+  text-align: right;
+  border: 1px solid #dcdcdc;
+  background-color: #f0f2f5;
+  border-radius: 4px;
+  font-size: 16px;
+  box-sizing: border-box;
+  outline: none;
+  transition: border 0.3s;
+}
+
+.row input:focus {
+  border-color: #00c853;
+  background-color: #fff;
+}
+
+.btn-success {
+  width: 100%;
+  padding: 14px;
+  background-color: #11de79;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  text-transform: uppercase;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: background 0.3s;
+}
+
+.btn-success:hover {
+  background-color: #1d7683;
+}
+
+.btn-row {
+  margin-top: 30px;
 }
 </style>
