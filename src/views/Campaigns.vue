@@ -1,5 +1,7 @@
 <script>
 import axios from 'axios'
+import Chart from 'chart.js/auto'
+
 import Header from '../components/Header.vue'
 import Popup from '../components/Popup.vue'
 import Toogle from '../components/Toogle.vue'
@@ -9,74 +11,286 @@ export default {
   components: { Header, Popup, Toogle },
   data () {
     return {
-      parent: '',
-      data: {},
+      parent: {
+        formData: {},
+        user: { auth: '' },
+        url: ''
+      },
+
+      data: { items: [] },
       details: {},
       date: '',
       date2: '',
       q: '',
       sort: '',
       loader: 1,
+      iChart: -1,
       id: 0,
       type: 0,
       all: true
     }
   },
   mounted () {
-    this.parent = this.$root || this.$parent
+    const foundParent = this.findParent()
 
-    if (this.parent && !this.parent.user) {
-      if (this.parent.logout) this.parent.logout()
+    if (foundParent) {
+      this.parent = foundParent
+    } else {
+      console.warn('Родительский компонент не найден, работаем с заглушкой')
+    }
+
+    if (this.parent.user && !this.parent.user.auth) {
+      if (typeof this.parent.logout === 'function') {
+        this.parent.logout()
+      }
     }
 
     this.get()
   },
   methods: {
+    findParent () {
+      let p = this.$parent
+      while (p) {
+        if (p.url || (p.user && p.user.auth)) return p
+        p = p.$parent
+      }
+      if (this.$root && (this.$root.url || this.$root.user)) {
+        return this.$root
+      }
+      return null
+    },
+
     toFormData (obj) {
       const fd = new FormData()
+      if (!obj) return fd
       for (let key in obj) {
         fd.append(key, obj[key])
       }
       return fd
     },
 
-    GetFirstAndLastDate () {
-      const year = new Date().getFullYear()
-      const month = new Date().getMonth()
-      const firstDayOfMonth = new Date(year, month, 2)
-      const lastDayOfMonth = new Date(year, month + 1, 1)
-
-      this.date = firstDayOfMonth.toISOString().substring(0, 10)
-      this.date2 = lastDayOfMonth.toISOString().substring(0, 10)
-    },
-
     get () {
       if (!this.parent.formData) this.parent.formData = {}
 
-      const data = this.toFormData(this.parent.formData)
+      const data = new FormData()
 
-      if (this.date !== '') data.append('date', this.date)
-      if (this.date2 !== '') data.append('date2', this.date2)
+      if (this.date) data.append('date', this.date)
+      if (this.date2) data.append('date2', this.date2)
       if (this.q) data.append('q', this.q)
       if (this.sort) data.append('sort', this.sort)
 
       this.loader = 1
 
-      if (!this.parent.user) return
+      const url = this.parent.url || ''
+      const auth =
+        this.parent.user && this.parent.user.auth ? this.parent.user.auth : ''
+
+      if (!url) {
+        console.log('URL API не найден')
+        this.loader = 0
+        return
+      }
 
       axios
-        .post(
-          this.parent.url + '/site/getCampaigns?auth=' + this.parent.user.auth,
-          data
-        )
+        .post(`${url}/site/getCampaigns?auth=${auth}`, data)
         .then(response => {
           this.data = response.data
           this.loader = 0
         })
         .catch(error => {
-          if (this.parent.logout) this.parent.logout()
           console.error(error)
+          if (this.parent && typeof this.parent.logout === 'function') {
+            this.parent.logout()
+          }
+          this.loader = 0
         })
+    },
+
+    getChart () {
+      if (
+        this.iChart === -1 ||
+        !this.data.items ||
+        !this.data.items[this.iChart]
+      )
+        return
+
+      let item = this.data.items[this.iChart]
+      this.parent.formData = item
+
+      const data = this.toFormData(this.parent.formData)
+
+      if (this.date) data.append('date', this.date)
+      if (this.date2) data.append('date2', this.date2)
+
+      const url = this.parent.url || ''
+      const auth = this.parent.user ? this.parent.user.auth : ''
+
+      axios
+        .post(url + '/site/getCampaignBannersChart?auth=' + auth, data)
+        .then(response => {
+          let resItem = response.data.items
+            ? response.data.items
+            : response.data
+
+          if (resItem) {
+            if (resItem.line) this.data.items[this.iChart].line = resItem.line
+            if (resItem.sites)
+              this.data.items[this.iChart].sites = resItem.sites
+            if (resItem.clicks !== undefined)
+              this.data.items[this.iChart].clicks = resItem.clicks
+            if (resItem.views !== undefined)
+              this.data.items[this.iChart].views = resItem.views
+            if (resItem.leads !== undefined)
+              this.data.items[this.iChart].leads = resItem.leads
+          }
+
+          this.renderChart(this.data.items[this.iChart])
+        })
+        .catch(error => {
+          console.log('Chart error', error)
+        })
+    },
+
+    line (item) {
+      this.$nextTick(() => {
+        const container = document.getElementById('chartOuter')
+        if (container) {
+          this.getChart()
+        } else {
+          console.error('Element #chartOuter not found')
+        }
+      })
+    },
+
+    renderChart (item) {
+      const self = this
+
+      if (window.myLineChart) {
+        window.myLineChart.destroy()
+      }
+
+      this.$nextTick(() => {
+        const container = document.getElementById('chartOuter')
+        if (!container) return
+
+        let dates = []
+        let clicks = []
+        let views = []
+
+        let current = new Date(self.date)
+        let end = new Date(self.date2)
+
+        if (!isNaN(current) && !isNaN(end)) {
+          while (current <= end) {
+            let year = current.getFullYear()
+            let month = ('0' + (current.getMonth() + 1)).slice(-2)
+            let day = ('0' + current.getDate()).slice(-2)
+
+            let keyDateDot = `${day}.${month}.${year}`
+            let keyDateDash = `${year}-${month}-${day}`
+
+            dates.push(`${day}.${month}.${year}`)
+
+            let stats = null
+            if (item && item.line) {
+              stats = item.line[keyDateDot] || item.line[keyDateDash]
+            }
+
+            if (stats) {
+              clicks.push(parseInt(stats.clicks) || 0)
+              views.push(parseInt(stats.views) || 0)
+            } else {
+              clicks.push(0)
+              views.push(0)
+            }
+            current.setDate(current.getDate() + 1)
+          }
+        }
+
+        const hintsDiv = document.getElementById('chartHints')
+        if (!hintsDiv) {
+          container.innerHTML = `
+            <div id="chartHints" style="display: flex; gap: 10px; justify-content: center; margin-bottom: 10px;">
+                <div class="chartHintsViews" style="color: #5000B8; font-weight: bold;">Views</div>
+                <div class="chartHintsClicks" style="color: #00599D; font-weight: bold;">Clicks</div>
+            </div>
+            <div style="height: 300px; position: relative;">
+                <canvas id="myChart"></canvas>
+            </div>`
+        }
+
+        const ctx = document.getElementById('myChart')
+        if (!ctx) return
+
+        const xScaleImage = {
+          id: 'xScaleImage',
+          afterDatasetsDraw (chart) {}
+        }
+
+        window.myLineChart = new Chart(ctx, {
+          type: 'line',
+          plugins: [xScaleImage],
+          data: {
+            labels: dates,
+            datasets: [
+              {
+                label: 'Clicks',
+                backgroundColor: '#00599D',
+                borderColor: '#00599D',
+                data: clicks,
+                yAxisID: 'y',
+                tension: 0.1
+              },
+              {
+                label: 'Views',
+                backgroundColor: '#5000B8',
+                borderColor: '#5000B8',
+                data: views,
+                yAxisID: 'y2',
+                tension: 0.1
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+              mode: 'index',
+              intersect: false
+            },
+            scales: {
+              y: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                beginAtZero: true
+              },
+              y2: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                beginAtZero: true,
+                grid: {
+                  drawOnChartArea: false
+                }
+              }
+            }
+          }
+        })
+      })
+    },
+
+    checkAll (prop) {
+      if (this.iChart === -1 || !this.data.items[this.iChart]) return
+
+      const currentItem = this.data.items[this.iChart]
+      if (currentItem && currentItem.sites) {
+        Object.values(currentItem.sites).forEach(site => {
+          site.include = prop
+        })
+      }
+      this.parent.formData = currentItem
+      this.getChart()
     },
 
     action () {
@@ -84,25 +298,24 @@ export default {
       this.parent.formData.copy = ''
 
       const data = this.toFormData(this.parent.formData)
+      const url = this.parent.url || ''
+      const auth = this.parent.user ? this.parent.user.auth : ''
 
       axios
-        .post(
-          this.parent.url +
-            '/site/actionCampaign?auth=' +
-            this.parent.user.auth,
-          data
-        )
+        .post(url + '/site/actionCampaign?auth=' + auth, data)
         .then(response => {
           if (this.$refs.new) this.$refs.new.active = 0
 
-          if (this.parent.formData.id) {
-            this.$refs.header.$refs.msg.successFun(
-              'Successfully updated campaign!'
-            )
-          } else {
-            this.$refs.header.$refs.msg.successFun(
-              'Successfully added new campaign!'
-            )
+          if (this.$refs.header && this.$refs.header.$refs.msg) {
+            if (this.parent.formData.id) {
+              this.$refs.header.$refs.msg.successFun(
+                'Successfully updated campaign!'
+              )
+            } else {
+              this.$refs.header.$refs.msg.successFun(
+                'Successfully added new campaign!'
+              )
+            }
           }
           this.get()
         })
@@ -114,34 +327,33 @@ export default {
     async del (item) {
       this.parent.formData = item
 
-      if (
-        await this.$refs.header.$refs.msg.confirmFun(
-          'Please confirm next action',
-          'Do you want to delete this campaign?'
-        )
-      ) {
-        const data = this.toFormData(this.parent.formData)
-
-        axios
-          .post(
-            this.parent.url +
-              '/site/deleteCampaign?auth=' +
-              this.parent.user.auth,
-            data
+      if (this.$refs.header && this.$refs.header.$refs.msg) {
+        if (
+          await this.$refs.header.$refs.msg.confirmFun(
+            'Please confirm next action',
+            'Do you want to delete this campaign?'
           )
-          .then(response => {
-            if (response.data.error) {
-              this.$refs.header.$refs.msg.alertFun(response.data.error)
-            } else {
-              this.$refs.header.$refs.msg.successFun(
-                'Successfully deleted campaign!'
-              )
-              this.get()
-            }
-          })
-          .catch(error => {
-            console.log('errors', error)
-          })
+        ) {
+          const data = this.toFormData(this.parent.formData)
+          const url = this.parent.url || ''
+          const auth = this.parent.user ? this.parent.user.auth : ''
+
+          axios
+            .post(url + '/site/deleteCampaign?auth=' + auth, data)
+            .then(response => {
+              if (response.data.error) {
+                this.$refs.header.$refs.msg.alertFun(response.data.error)
+              } else {
+                this.$refs.header.$refs.msg.successFun(
+                  'Successfully deleted campaign!'
+                )
+                this.get()
+              }
+            })
+            .catch(error => {
+              console.log('errors', error)
+            })
+        }
       }
     },
 
@@ -197,6 +409,157 @@ export default {
           <h1 class="page-title">Campaigns</h1>
         </div>
       </div>
+
+      <Popup ref="chart" fullscreen="true" title="Chart">
+        <div
+          class="flex panel"
+          style="display: flex; justify-content: space-between; padding: 20px"
+        >
+          <div class="w30 ptb25">
+            <input
+              type="date"
+              v-model="date"
+              @change="getChart()"
+              class="date-input"
+            />
+            <input
+              type="date"
+              v-model="date2"
+              @change="getChart()"
+              class="date-input"
+            />
+          </div>
+
+          <div class="w70-al" style="flex-grow: 1; padding-left: 20px">
+            <div
+              class="flex cubes"
+              style="display: flex; gap: 20px; text-align: center"
+            >
+              <div class="w30 clicks">
+                <div style="font-weight: bold; color: #00599d">Clicks</div>
+                {{
+                  data.items && data.items[iChart]
+                    ? data.items[iChart].clicks
+                    : 0
+                }}
+              </div>
+              <div class="w38 views">
+                <div style="font-weight: bold; color: #5000b8">Views</div>
+                {{
+                  data.items && data.items[iChart]
+                    ? data.items[iChart].views
+                    : 0
+                }}
+              </div>
+              <div class="w30 leads">
+                <div>Leads</div>
+                {{
+                  data.items && data.items[iChart]
+                    ? data.items[iChart].leads
+                    : 0
+                }}
+              </div>
+              <div class="w38-ctr">
+                <div>CTR</div>
+                {{
+                  data.items &&
+                  data.items[iChart] &&
+                  data.items[iChart].views > 0
+                    ? (
+                        (data.items[iChart].clicks * 100) /
+                        data.items[iChart].views
+                      ).toFixed(2)
+                    : '0.00'
+                }}%
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex body" style="display: flex; margin-top: 20px">
+          <div
+            class="w30 ar filchart"
+            style="
+              width: 30%;
+              border-right: 1px solid #eee;
+              padding-right: 10px;
+            "
+          >
+            <div
+              class="itemchart ptb10"
+              style="padding: 5px 0"
+              v-if="
+                data.items && data.items[iChart] && data.items[iChart].sites
+              "
+            >
+              <Toogle
+                v-model="all"
+                @update:modelValue="
+                  val => {
+                    all = val
+                    checkAll(val)
+                  }
+                "
+              />
+              <strong>ALL</strong>
+            </div>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 10px 0" />
+
+            <div
+              class="itemchart ptb10"
+              style="
+                padding: 5px 0;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+              "
+              v-if="data.items && data.items[iChart]"
+              v-for="(s, index) in data.items[iChart].sites"
+              :key="s.site || index"
+            >
+              <Toogle
+                v-model="s.include"
+                @update:modelValue="
+                  ;(parent.formData = data.items[iChart]), getChart()
+                "
+              />
+              <span style="font-size: 13px">{{ s.site }}</span>
+            </div>
+          </div>
+
+          <div
+            class="w70"
+            id="chartOuter"
+            style="width: 70%; padding-left: 20px"
+          >
+            <div
+              id="chartHints"
+              style="
+                display: flex;
+                gap: 10px;
+                justify-content: center;
+                margin-bottom: 10px;
+              "
+            >
+              <div
+                class="chartHintsViews"
+                style="color: #5000b8; font-weight: bold"
+              >
+                Views
+              </div>
+              <div
+                class="chartHintsClicks"
+                style="color: #00599d; font-weight: bold"
+              >
+                Clicks
+              </div>
+            </div>
+            <div style="height: 300px; position: relative">
+              <canvas id="myChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </Popup>
 
       <Popup
         ref="new"
@@ -266,26 +629,45 @@ export default {
                 </router-link>
               </td>
               <td class="col-stat">
-                <a href="#" @click.prevent="openDetails(item.id, 1)">{{
-                  item.views
-                }}</a>
+                <a href="#" @click.prevent="openDetails(item.id, 1)">
+                  {{ item.views }}
+                </a>
               </td>
               <td class="col-stat">
-                <a href="#" @click.prevent="openDetails(item.id, 2)">{{
-                  item.clicks || 0
-                }}</a>
+                <a href="#" @click.prevent="openDetails(item.id, 2)">
+                  {{ item.clicks || 0 }}
+                </a>
               </td>
               <td class="col-stat">
-                <a href="#" @click.prevent="openDetails(item.id, 3)">{{
-                  item.leads || 0
-                }}</a>
+                <a href="#" @click.prevent="openDetails(item.id, 3)">
+                  {{ item.leads || 0 }}
+                </a>
               </td>
               <td class="col-stat">
-                <a href="#" @click.prevent="openDetails(item.id, 4)">{{
-                  item.fclicks || 0
-                }}</a>
+                <a href="#" @click.prevent="openDetails(item.id, 4)">
+                  {{ item.fclicks || 0 }}
+                </a>
               </td>
               <td class="col-actions">
+                <router-link
+                  :to="'/campaign/' + item.id"
+                  style="margin-right: 8px; color: #888"
+                >
+                  <i class="fas fa-edit"></i>
+                </router-link>
+
+                <a
+                  href="#"
+                  @click.prevent="
+                    ;(parent.formData = item), (iChart = i)
+                    $refs.chart.active = 1
+                    line(item)
+                  "
+                  style="margin-right: 8px; color: #888"
+                >
+                  <i class="fas fa-chart-bar"></i>
+                </a>
+
                 <a
                   href="#"
                   @click.prevent=";(parent.formData = item), del(item)"
@@ -542,5 +924,146 @@ export default {
 
 #spinner img {
   width: 64px;
+}
+
+.panel {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: space-between;
+  align-items: center;
+  background-color: transparent;
+  border-bottom: 1px solid #eee;
+}
+
+.w30.ptb25 input {
+  border: none;
+  background: transparent;
+  font-family: sans-serif;
+  font-size: 13px;
+  color: #333;
+  cursor: pointer;
+  outline: none;
+}
+
+.w70-al {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.cubes {
+  display: flex;
+  flex-wrap: nowrap;
+  width: 100%;
+  color: white;
+  font-family: sans-serif;
+  border-radius: 8px;
+  margin-right: 5px;
+  overflow: hidden;
+}
+
+.cubes > div {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px 15px;
+  height: 60px;
+  flex: 1;
+}
+
+.cubes > div > div:first-child {
+  align-self: flex-end;
+  font-size: 11px;
+  text-transform: uppercase;
+  opacity: 0.9;
+  margin-bottom: 2px;
+}
+
+.cubes > div {
+  font-size: 22px;
+  font-weight: 500;
+  text-align: right;
+  line-height: 1.2;
+}
+
+.w38-ctr {
+  order: 1;
+  background-color: #fff;
+  color: #333;
+  border: 1px solid #ddd;
+  border-right: none;
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+.w38-ctr > div:first-child {
+  color: #999;
+}
+
+.leads {
+  order: 2;
+  background-color: #4caf50;
+}
+
+.views {
+  order: 3;
+  background-color: #4a148c;
+}
+
+.clicks {
+  order: 4;
+  background-color: #01579b;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.body {
+  display: flex;
+  flex-direction: row-reverse;
+  padding: 20px;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+#chartOuter.w70 {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+#chartHints {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 5px;
+  font-family: sans-serif;
+}
+
+.filchart {
+  width: 280px;
+  flex-shrink: 0;
+  text-align: right;
+  padding-top: 25px;
+}
+
+.itemchart {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-family: sans-serif;
+  color: #333;
+  cursor: pointer;
+}
+
+.itemchart:hover {
+  opacity: 0.8;
+}
+
+#myChart {
+  width: 100% !important;
+  height: auto !important;
+  max-height: 400px;
 }
 </style>
