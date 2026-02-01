@@ -19,8 +19,6 @@ export default {
   },
   data: function () {
     return {
-      // ГЛАВНОЕ ИСПРАВЛЕНИЕ ЗДЕСЬ:
-      // Инициализируем parent заглушкой, чтобы шаблон не падал при старте
       parent: {
         formData: {},
         user: { auth: '' },
@@ -41,7 +39,6 @@ export default {
     }
   },
   mounted: function () {
-    // 1. Ищем настоящего родителя (App.vue)
     const foundParent = this.findParent()
     if (foundParent) {
       this.parent = foundParent
@@ -49,7 +46,6 @@ export default {
       console.warn('Parent component not found, using stub')
     }
 
-    // 2. Проверка авторизации
     if (this.parent.user && !this.parent.user.auth) {
       if (typeof this.parent.logout === 'function') {
         this.parent.logout()
@@ -60,7 +56,6 @@ export default {
     // this.GetFirstAndLastDate()
   },
   methods: {
-    // Вспомогательная функция поиска родителя
     findParent () {
       let p = this.$parent
       while (p) {
@@ -98,7 +93,6 @@ export default {
       if (this.date != '') data.append('date', this.date)
       if (this.date2 != '') data.append('date2', this.date2)
 
-      // Получаем ID из роутера (Vue 3 style) или из родителя (Legacy style)
       const routeId =
         this.$route.params.id ||
         (this.parent.$route && this.parent.$route.params.id)
@@ -119,7 +113,6 @@ export default {
         .then(function (response) {
           self.loader = 0
           self.data = response.data
-          // Безопасная установка заголовка
           if (self.data.info && self.data.info.title) {
             document.title = self.data.info.title
           }
@@ -135,7 +128,7 @@ export default {
     },
 
     getDetails: function (bid = false, type = false) {
-      this.details = [] // Лучше массив
+      this.details = []
       if (bid) this.id = bid
       if (type) this.type = type
       if (this.id) bid = this.id
@@ -207,7 +200,6 @@ export default {
       self.parent.formData.copy = ''
       var data = this.toFormData(self.parent.formData)
 
-      // Получаем ID кампании
       const routeId =
         this.$route.params.id ||
         (this.parent.$route && this.parent.$route.params.id)
@@ -749,12 +741,8 @@ export default {
 </template>
 
 <style scoped>
-/* =========================================
-   1. ОБЩИЕ СТИЛИ СТРАНИЦЫ (ПО СКРИНШОТУ)
-   ========================================= */
-
 .page-wrapper {
-  background-color: #f7f8fa; /* Светлый фон всей страницы */
+  background-color: #f7f8fa;
   min-height: 100vh;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #333;
@@ -766,9 +754,8 @@ export default {
   padding: 0 20px;
 }
 
-/* --- МЯТНЫЙ ПОДЗАГОЛОВОК --- */
 .sub-header {
-  background-color: #e3fff9; /* Мятный цвет из скриншота */
+  background-color: #e3fff9;
   padding: 15px 0;
   margin-bottom: 20px;
   border-bottom: 1px solid #d0f0e8;
@@ -804,7 +791,6 @@ export default {
   opacity: 0.9;
 }
 
-/* --- ТУЛБАР (ФИЛЬТРЫ) --- */
 .toolbar {
   display: flex;
   justify-content: space-between;
@@ -866,7 +852,7 @@ export default {
 .styled-table {
   width: 100%;
   border-collapse: collapse;
-  text-align: center; /* Центрируем всё по умолчанию как на скрине */
+  text-align: center;
 }
 
 .styled-table th {
@@ -941,7 +927,6 @@ export default {
   color: #00d68f;
 }
 
-/* Переключатель и картинка */
 .toggle-wrapper {
   display: flex;
   align-items: center;
@@ -963,11 +948,6 @@ export default {
   min-width: 20px;
   text-align: right;
 }
-
-/* =========================================
-   2. СТИЛИ ДЛЯ POPUP И ГРАФИКОВ (LEGACY)
-   Эти стили нужны, чтобы попапы не развалились
-   ========================================= */
 
 .panel {
   display: flex;
@@ -999,7 +979,6 @@ export default {
   text-align: right;
 }
 
-/* Кубики в графике */
 .cubes {
   display: flex;
   width: 100%;
@@ -1040,7 +1019,6 @@ export default {
   border: 1px solid #ddd;
 }
 
-/* Тело графика */
 .body {
   display: flex;
   flex-direction: row-reverse;
@@ -1080,7 +1058,6 @@ export default {
   height: 300px !important;
 }
 
-/* Стили форм внутри попапов */
 .form.inner-form {
   padding: 10px;
 }
@@ -1111,7 +1088,6 @@ export default {
   margin-right: 10px;
 }
 
-/* Лоадер */
 #spinner {
   position: fixed;
   top: 0;
