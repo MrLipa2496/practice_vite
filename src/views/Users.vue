@@ -295,8 +295,8 @@ export default {
           </thead>
           <tbody>
             <tr v-for="(item, i) in data.items" :key="item.id || i">
-              <td class="col-id">{{ item.id }}</td>
-              <td class="col-toggle">
+              <td class="col-id" data-label="ID">{{ item.id }}</td>
+              <td class="col-toggle" data-label="Status">
                 <Toogle
                   :modelValue="item.published"
                   @update:modelValue="
@@ -305,14 +305,14 @@ export default {
                   "
                 />
               </td>
-              <td class="col-title">
+              <td class="col-title" data-label="Name">
                 <router-link :to="'/user/' + item.id" class="link-primary">
                   {{ item.user }}
                 </router-link>
               </td>
-              <td>{{ item.phone }}</td>
-              <td>{{ item.email }}</td>
-              <td class="col-actions">
+              <td data-label="Phone">{{ item.phone }}</td>
+              <td data-label="Email">{{ item.email }}</td>
+              <td class="col-actions" data-label="Actions">
                 <router-link :to="'/user/' + item.id" class="action-icon">
                   <i class="fas fa-edit"></i>
                 </router-link>
@@ -532,5 +532,140 @@ export default {
 }
 #spinner img {
   width: 64px;
+}
+
+@media (max-width: 850px) {
+  .content-wrapper {
+    padding: 0 10px;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 20px 0;
+    gap: 15px;
+  }
+
+  .toolbar-left,
+  .toolbar-center,
+  .toolbar-right {
+    width: 100%;
+    justify-content: center;
+    flex: none;
+  }
+
+  .toolbar-center {
+    order: 3;
+  }
+
+  .toolbar-left {
+    order: 1;
+    text-align: center;
+  }
+
+  .toolbar-right {
+    order: 2;
+  }
+
+  .toolbar-center :deep(input),
+  .toolbar-center > * {
+    width: 100%;
+  }
+
+  .btn-primary {
+    width: 100%;
+    justify-content: center;
+    padding: 12px;
+  }
+
+  .table-container {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .data-table,
+  .data-table thead,
+  .data-table tbody,
+  .data-table th,
+  .data-table td,
+  .data-table tr {
+    display: block;
+  }
+
+  .data-table thead {
+    display: none;
+  }
+
+  .data-table tr {
+    background: #fff;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    padding: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid #edf2f7;
+  }
+
+  .data-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 8px;
+    border-bottom: 1px solid #f8f9fa;
+    text-align: right;
+    width: auto !important;
+    min-height: 45px;
+  }
+
+  .data-table td:last-child {
+    border-bottom: none;
+  }
+
+  .data-table td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 11px;
+    color: #8898aa;
+    margin-right: 15px;
+    text-align: left;
+  }
+
+  .col-id {
+    background: #f8f9fe;
+    border-radius: 8px 8px 0 0;
+    font-weight: bold;
+  }
+
+  .col-toggle {
+    background: #f8f9fe;
+    border-radius: 0 0 0 0;
+    margin-bottom: 0;
+  }
+
+  .col-actions {
+    justify-content: center !important;
+    gap: 20px;
+    padding-top: 15px !important;
+  }
+
+  .action-icon,
+  .icon-delete {
+    font-size: 18px;
+    padding: 5px;
+  }
+
+  :deep(.popup-content) {
+    width: 95% !important;
+    margin: 10px auto;
+  }
+}
+
+@media (max-width: 380px) {
+  .data-table td {
+    font-size: 13px;
+  }
+  .page-title {
+    font-size: 20px;
+  }
 }
 </style>

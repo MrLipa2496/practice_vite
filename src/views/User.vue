@@ -808,7 +808,7 @@ export default {
             </thead>
             <tbody>
               <tr v-for="(item, i) in data.statistics" :key="item.id || i">
-                <td class="col-toggle">
+                <td class="col-toggle" data-label="Status">
                   <Toogle
                     :modelValue="item.published"
                     @update:modelValue="
@@ -817,7 +817,7 @@ export default {
                     "
                   />
                 </td>
-                <td>
+                <td data-label="Banner">
                   <a
                     href="#"
                     @click.prevent="
@@ -830,12 +830,20 @@ export default {
                     />
                   </a>
                 </td>
-                <td class="col-title">{{ item.campaign_title }}</td>
-                <td style="font-size: 12px; color: #999">{{ item.size }}</td>
-                <td class="col-stat">{{ item.views }}</td>
-                <td class="col-stat">{{ item.clicks || 0 }}</td>
-                <td class="col-stat">{{ item.leads || 0 }}</td>
-                <td class="col-actions">
+                <td data-label="Campaign" class="col-title">
+                  {{ item.campaign_title }}
+                </td>
+                <td data-label="Size" style="font-size: 12px; color: #999">
+                  {{ item.size }}
+                </td>
+                <td data-label="Views" class="col-stat">{{ item.views }}</td>
+                <td data-label="Clicks" class="col-stat">
+                  {{ item.clicks || 0 }}
+                </td>
+                <td data-label="Leads" class="col-stat">
+                  {{ item.leads || 0 }}
+                </td>
+                <td data-label="Actions" class="col-actions">
                   <a
                     href="#"
                     class="action-icon"
@@ -1185,5 +1193,125 @@ export default {
 }
 #spinner img {
   width: 64px;
+}
+
+@media (max-width: 768px) {
+  .toolbar {
+    flex-direction: column;
+    text-align: center;
+    padding: 15px 0;
+  }
+  .toolbar-left,
+  .toolbar-right,
+  .toolbar-center {
+    width: 100%;
+    justify-content: center;
+  }
+  .page-title {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+  .user-brief-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    text-align: center;
+  }
+  .user-brief-info span {
+    margin-right: 0;
+  }
+
+  .tabs-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -20px;
+    padding: 0 20px;
+  }
+  .tabs-container ul {
+    display: flex;
+    white-space: nowrap;
+    width: max-content;
+  }
+  .tabs-container li {
+    padding: 12px 15px;
+    flex: 1;
+  }
+
+  .data-table,
+  .data-table thead,
+  .data-table tbody,
+  .data-table th,
+  .data-table td,
+  .data-table tr {
+    display: block;
+  }
+  .data-table thead {
+    display: none;
+  }
+  .data-table tr {
+    margin-bottom: 20px;
+    border: 1px solid #edf2f7;
+    border-radius: 12px;
+    background: #fff;
+    padding: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  }
+  .data-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 5px;
+    border-bottom: 1px solid #f8f9fa;
+    text-align: right;
+    width: auto !important;
+  }
+  .data-table td:last-child {
+    border-bottom: none;
+  }
+  .data-table td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 11px;
+    color: #8898aa;
+  }
+
+  .col-toggle,
+  .col-actions {
+    justify-content: center !important;
+    background: #f8f9fe;
+    border-radius: 8px;
+    margin-bottom: 5px;
+  }
+  .col-actions .action-icon {
+    font-size: 18px;
+    padding: 5px 15px;
+  }
+
+  .data-table td img {
+    max-height: 80px !important;
+    width: auto;
+  }
+
+  .chart-popup-content {
+    padding: 0;
+  }
+  .flex-body-chart {
+    padding: 10px !important;
+  }
+  #chartOuterSites,
+  #chartOuterStats {
+    height: 250px !important;
+  }
+
+  .btn-primary {
+    width: 90%;
+    justify-content: center;
+  }
+}
+
+.content-wrapper {
+  overflow-x: hidden;
 }
 </style>

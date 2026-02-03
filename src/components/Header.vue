@@ -8,13 +8,12 @@ export default {
   },
   data () {
     return {
-      active: false, // Используем boolean для v-if/v-show
+      active: false,
       menu: false,
       parent: null
     }
   },
   mounted () {
-    // Безопасный поиск родителя с данными
     this.parent = this.$parent.$parent.$parent || this.$parent || this.$root
   },
   methods: {
@@ -303,6 +302,11 @@ export default {
 
 .mobile-close {
   display: none;
+}
+@media (max-width: 768px) {
+  .logo-section {
+    display: none;
+  }
 }
 
 @media (max-width: 900px) {

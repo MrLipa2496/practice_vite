@@ -2,11 +2,10 @@
 import axios from 'axios'
 import Chart from 'chart.js/auto'
 
-// Импортируем компоненты
 import Header from '../components/Header.vue'
 import Popup from '../components/Popup.vue'
 import Toogle from '../components/Toogle.vue'
-import ImageUpload from '../components/Image.vue' // Переименовали, чтобы не конфликтовало с HTML Image
+import ImageUpload from '../components/Image.vue'
 
 export default {
   name: 'Campaign',
@@ -14,7 +13,6 @@ export default {
     Header,
     Popup,
     Toogle,
-    // В шаблоне используется тег <Image>, поэтому регистрируем компонент под этим именем
     Image: ImageUpload
   },
   data: function () {
@@ -419,7 +417,7 @@ export default {
           </thead>
           <tbody>
             <tr v-for="(item, i) in data.items" :key="item.id || i">
-              <td class="td-actions">
+              <td class="td-actions" data-label="Actions">
                 <a
                   href="#"
                   class="action-icon del"
@@ -449,7 +447,7 @@ export default {
                 </a>
               </td>
 
-              <td>
+              <td data-label="Fraud">
                 <a
                   href="#"
                   @click.prevent="
@@ -459,7 +457,7 @@ export default {
                   {{ item.fclicks || 0 }}
                 </a>
               </td>
-              <td>
+              <td data-label="Leads">
                 <a
                   href="#"
                   @click.prevent="
@@ -469,7 +467,7 @@ export default {
                   {{ item.leads || 0 }}
                 </a>
               </td>
-              <td>
+              <td data-label="Clicks">
                 <a
                   href="#"
                   @click.prevent="
@@ -480,7 +478,7 @@ export default {
                   <template v-else>0</template>
                 </a>
               </td>
-              <td>
+              <td data-label="Views">
                 <a
                   href="#"
                   @click.prevent="
@@ -491,15 +489,15 @@ export default {
                 </a>
               </td>
 
-              <td class="td-link">
+              <td class="td-link" data-label="Link">
                 <a :href="item.link" target="_blank" class="link-text">
                   {{ item.link }}
                 </a>
               </td>
 
-              <td>{{ item.size }}</td>
+              <td data-label="Size">{{ item.size }}</td>
 
-              <td class="td-toggle">
+              <td class="td-toggle" data-label="Status">
                 <div class="toggle-wrapper">
                   <div
                     class="mini-preview"
@@ -1108,5 +1106,148 @@ export default {
   text-align: center;
   padding: 50px;
   color: #999;
+}
+
+@media (max-width: 850px) {
+  .sub-header .flex-between {
+    flex-direction: column-reverse;
+    gap: 15px;
+    text-align: center;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
+  }
+
+  .toolbar-left,
+  .toolbar-center,
+  .toolbar-right {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .date-group {
+    justify-content: center;
+  }
+
+  .table-card {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .styled-table,
+  .styled-table thead,
+  .styled-table tbody,
+  .styled-table th,
+  .styled-table td,
+  .styled-table tr {
+    display: block;
+  }
+
+  .styled-table thead {
+    display: none;
+  }
+
+  .styled-table tr {
+    background: white;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  .styled-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: right;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 12px 8px;
+  }
+
+  .styled-table td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 11px;
+    color: #999;
+    text-align: left;
+  }
+
+  .td-actions {
+    justify-content: space-around !important;
+    background: #f9f9f9;
+    border-radius: 6px;
+    margin-bottom: 10px;
+  }
+
+  .td-link {
+    flex-direction: column;
+    align-items: flex-start !important;
+    word-break: break-all;
+  }
+
+  .toggle-wrapper {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .panel {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .w30.ptb25,
+  .w70.al {
+    width: 100% !important;
+    padding: 10px 0 !important;
+  }
+
+  .cubes {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+    margin: 10px 0;
+  }
+
+  .cubes > div {
+    height: 70px !important;
+    margin: 0 !important;
+  }
+
+  .body {
+    flex-direction: column !important;
+    padding: 10px !important;
+  }
+
+  .body .w30,
+  .body .w70 {
+    width: 100% !important;
+  }
+
+  .filchart {
+    order: 2;
+    border-top: 1px solid #eee;
+    margin-top: 20px;
+  }
+
+  #myChart {
+    height: 250px !important;
+  }
+
+  .details-popup .table td {
+    font-size: 12px;
+    padding: 8px 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .date-group input {
+    width: 120px;
+    font-size: 12px;
+  }
 }
 </style>

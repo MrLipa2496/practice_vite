@@ -1,12 +1,10 @@
 <script>
 import axios from 'axios'
 
-// Импортируем компоненты локально
 import Header from '../components/Header.vue'
 import Popup from '../components/Popup.vue'
 import Toogle from '../components/Toogle.vue'
 
-// Импорт картинки лоадера
 import loaderImg from '../assets/img/loader.gif'
 
 export default {
@@ -18,7 +16,6 @@ export default {
   },
   data: function () {
     return {
-      // Инициализируем parent заглушкой
       parent: {
         formData: {},
         user: { id: '', auth: '' },
@@ -33,13 +30,11 @@ export default {
     }
   },
   mounted: function () {
-    // Поиск настоящего родителя (App.vue)
     const foundParent = this.findParent()
     if (foundParent) {
       this.parent = foundParent
     }
 
-    // Проверка авторизации
     if (this.parent.user && !this.parent.user.auth) {
       if (typeof this.parent.logout === 'function') {
         this.parent.logout()
@@ -294,21 +289,16 @@ export default {
                   />
                 </div>
               </td>
-              <td class="col-title">{{ item.campaign_title }}</td>
-              <td
-                style="
-                  max-width: 200px;
-                  overflow: hidden;
-                  text-overflow: ellipsis;
-                  white-space: nowrap;
-                "
-              >
-                {{ item.link }}
+              <td class="col-title" data-label="Campaign">
+                {{ item.campaign_title }}
               </td>
-              <td class="col-stat">{{ item.views }}</td>
-              <td class="col-stat">{{ item.clicks || 0 }}</td>
-              <td class="col-stat">{{ item.leads || 0 }}</td>
-              <td class="col-stat">
+              <td class="col-link" data-label="Link">{{ item.link }}</td>
+              <td class="col-stat" data-label="Views">{{ item.views }}</td>
+              <td class="col-stat" data-label="Clicks">
+                {{ item.clicks || 0 }}
+              </td>
+              <td class="col-stat" data-label="Leads">{{ item.leads || 0 }}</td>
+              <td class="col-stat" data-label="Fraud">
                 <span :class="{ 'text-danger': item.fclicks > 0 }">{{
                   item.fclicks || 0
                 }}</span>
@@ -332,13 +322,11 @@ export default {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #333;
 }
-
 .content-wrapper {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
 }
-
 .toolbar {
   display: flex;
   justify-content: space-between;
@@ -346,14 +334,12 @@ export default {
   padding: 30px 0;
   gap: 20px;
 }
-
 .page-title {
   font-size: 24px;
   font-weight: 700;
   color: #2c3e50;
   margin: 0;
 }
-
 .date-group {
   display: flex;
   align-items: center;
@@ -362,7 +348,6 @@ export default {
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
-
 .date-input {
   border: 1px solid #dce1e6;
   border-radius: 4px;
@@ -370,12 +355,10 @@ export default {
   font-size: 13px;
   outline: none;
 }
-
 .date-separator {
   margin: 0 10px;
   color: #888;
 }
-
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -389,6 +372,7 @@ export default {
   font-size: 14px;
   border: none;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .table-container {
@@ -398,23 +382,19 @@ export default {
   overflow: hidden;
   margin-bottom: 30px;
 }
-
 .data-table {
   width: 100%;
   border-collapse: collapse;
 }
-
 .data-table th {
   background-color: #fff;
   border-bottom: 2px solid #f0f0f0;
   padding: 18px 15px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   color: #8898aa;
   text-transform: uppercase;
-  text-align: left;
 }
-
 .data-table td {
   padding: 16px 15px;
   font-size: 14px;
@@ -422,67 +402,107 @@ export default {
   border-bottom: 1px solid #f5f5f5;
   vertical-align: middle;
 }
-
-.data-table tr:hover {
-  background-color: #f8f9fe;
+.col-link {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-
-.col-toggle {
-  width: 60px;
-  text-align: center;
-}
-.col-stat {
-  text-align: center;
-  width: 90px;
-}
-.col-title {
-  font-weight: 600;
-  color: #32325d;
-}
-
 .mini-preview img {
   max-width: 60px;
   max-height: 40px;
   border-radius: 4px;
   border: 1px solid #eee;
+  cursor: pointer;
+  display: block;
 }
-
 .text-danger {
   color: #f5365c;
   font-weight: bold;
 }
 
-.empty-state {
-  text-align: center;
-  padding: 60px;
-  color: #8898aa;
-  background: #fff;
-  border-radius: 12px;
-}
+@media (max-width: 850px) {
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 20px 0;
+    gap: 15px;
+  }
+  .toolbar-left,
+  .toolbar-center,
+  .toolbar-right {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  .date-group {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .date-input {
+    flex: 1;
+    width: 40%;
+  }
+  .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
 
-.form-container {
-  padding: 15px;
-}
-.form-group {
-  margin-bottom: 15px;
-  text-align: left;
-}
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 600;
-}
-.text-input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  box-sizing: border-box;
-}
+  .data-table,
+  .data-table thead,
+  .data-table tbody,
+  .data-table th,
+  .data-table td,
+  .data-table tr {
+    display: block;
+  }
+  .data-table thead {
+    display: none;
+  }
 
-.form-actions {
-  display: flex;
-  justify-content: center;
+  .data-table tr {
+    margin-bottom: 20px;
+    border: 1px solid #edf2f7;
+    border-radius: 12px;
+    padding: 10px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+
+  .data-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f8f9fa;
+    padding: 12px 8px;
+    text-align: right;
+  }
+  .data-table td:last-child {
+    border-bottom: none;
+  }
+
+  .data-table td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 10px;
+    color: #adb5bd;
+    margin-right: 15px;
+    text-align: left;
+  }
+
+  .col-toggle {
+    background: #f8f9fe;
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+  .col-link {
+    max-width: 180px;
+  }
+  .mini-preview img {
+    max-width: 80px;
+    max-height: 50px;
+  }
 }
 
 #spinner {
@@ -500,7 +520,77 @@ export default {
 #spinner img {
   width: 64px;
 }
-.ac {
-  text-align: center;
+.form-container {
+  padding: 20px;
+  background-color: #fff;
+}
+
+.form-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #4a5568;
+}
+
+.text-input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #2d3748;
+  background-color: #f8fafc;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.text-input:focus {
+  border-color: #00d68f;
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(0, 214, 143, 0.1);
+}
+
+.form-actions {
+  margin-top: 10px;
+  padding-top: 15px;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-primary {
+  background-color: #00d68f;
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #00b87a;
+}
+
+textarea.text-input {
+  line-height: 1.5;
+  resize: vertical;
+}
+.text-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
 }
 </style>

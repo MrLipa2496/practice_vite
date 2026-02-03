@@ -157,19 +157,21 @@ export default {
           </thead>
           <tbody>
             <tr v-for="item in data.items" :key="item.id">
-              <td class="col-id">{{ item.id }}</td>
-              <td>
+              <td class="col-id" data-label="ID">{{ item.id }}</td>
+              <td data-label="Preview">
                 <div class="mini-preview">
                   <img :src="item.img ? parent.url + item.img : ''" alt="ad" />
                 </div>
               </td>
-              <td class="col-title">{{ item.campaign_title }}</td>
-              <td>
+              <td class="col-title" data-label="Campaign">
+                {{ item.campaign_title }}
+              </td>
+              <td class="col-link" data-label="Link">
                 <a :href="item.link" target="_blank" class="link-primary">{{
                   item.link
                 }}</a>
               </td>
-              <td class="col-actions">
+              <td class="col-actions" data-label="Actions">
                 <a
                   href="#"
                   class="action-icon"
@@ -192,7 +194,6 @@ export default {
 </template>
 
 <style scoped>
-/* ПРИМЕНЯЕМ ВАШИ СТАНДАРТНЫЕ СТИЛИ */
 .page-container {
   background-color: #f0f4f8;
   min-height: 100vh;
@@ -348,5 +349,100 @@ export default {
 }
 #spinner img {
   width: 64px;
+}
+
+@media (max-width: 768px) {
+  .content-wrapper {
+    padding: 0 10px;
+  }
+
+  .toolbar {
+    padding: 20px 0;
+    justify-content: center;
+  }
+
+  .data-table,
+  .data-table thead,
+  .data-table tbody,
+  .data-table th,
+  .data-table td,
+  .data-table tr {
+    display: block;
+  }
+
+  .data-table thead {
+    display: none;
+  }
+
+  .data-table tr {
+    background: #fff;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid #edf2f7;
+  }
+
+  .data-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 5px;
+    border-bottom: 1px solid #f8f9fa;
+    text-align: right;
+    width: auto !important;
+  }
+
+  .data-table td:last-child {
+    border-bottom: none;
+  }
+
+  .data-table td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 11px;
+    color: #8898aa;
+    margin-right: 15px;
+    text-align: left;
+  }
+
+  .col-link {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+
+  .col-link::before {
+    margin-bottom: 5px;
+  }
+
+  .link-text {
+    display: block;
+    width: 100%;
+    word-break: break-all;
+    font-size: 13px;
+    text-align: left;
+  }
+
+  .mini-preview img {
+    max-width: 120px;
+    max-height: 80px;
+  }
+
+  .col-actions {
+    background: #f8f9fe;
+    border-radius: 8px;
+    margin-top: 10px;
+    justify-content: center !important;
+  }
+
+  .action-icon {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 5px 0;
+  }
 }
 </style>

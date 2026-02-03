@@ -131,7 +131,7 @@ export default {
 }
 
 .image-side {
-  width: 85%;
+  width: 60%;
   position: relative;
   background-color: #000;
 }
@@ -144,7 +144,7 @@ export default {
 }
 
 .form-side {
-  width: 50%;
+  width: 40%;
   background-color: #f4f6f8;
   display: flex;
   flex-direction: column;
@@ -192,10 +192,59 @@ export default {
   max-width: 400px;
 }
 
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .image-side {
+    display: none;
+  }
+
+  .form-side {
+    width: 100%;
+    min-height: 100vh;
+  }
+
+  .login-header {
+    padding: 15px 20px;
+  }
+
+  .login-header h1 {
+    font-size: 16px;
+  }
+
+  .form-wrapper {
+    align-items: flex-start;
+    padding-top: 50px;
+  }
+
+  .form-wrapper form {
+    text-align: left;
+    max-width: 100%;
+  }
+
+  .row input {
+    text-align: left;
+    padding: 15px;
+    font-size: 16px;
+  }
+
+  .row label {
+    font-size: 13px;
+  }
+
+  .btn-success {
+    padding: 16px;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+}
+
 .row {
   margin-bottom: 20px;
 }
-
 .row label {
   display: block;
   margin-bottom: 8px;
@@ -203,43 +252,34 @@ export default {
   font-size: 14px;
   color: #333;
 }
-
 .row input {
   width: 100%;
   padding: 12px 15px;
-  text-align: right;
   border: 1px solid #dcdcdc;
   background-color: #f0f2f5;
   border-radius: 4px;
-  font-size: 16px;
   box-sizing: border-box;
   outline: none;
   transition: border 0.3s;
 }
-
 .row input:focus {
   border-color: #00c853;
   background-color: #fff;
 }
-
 .btn-success {
   width: 100%;
-  padding: 14px;
+  height: 40px;
   background-color: #11de79;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 16px;
   text-transform: uppercase;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   transition: background 0.3s;
 }
-
 .btn-success:hover {
   background-color: #1d7683;
 }
-
 .btn-row {
   margin-top: 30px;
 }

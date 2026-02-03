@@ -616,39 +616,39 @@ export default {
           </thead>
           <tbody>
             <tr v-for="(item, i) in data.items" :key="item.id || i">
-              <td class="col-id">{{ item.id }}</td>
-              <td class="col-toggle">
+              <td class="col-id" data-label="ID">{{ item.id }}</td>
+              <td class="col-toggle" data-label="Status">
                 <Toogle
                   v-model="item.published"
                   @update:modelValue=";(parent.formData = item), action()"
                 />
               </td>
-              <td class="col-title">
+              <td class="col-title" data-label="Title">
                 <router-link :to="'/campaign/' + item.id" class="link-primary">
                   {{ item.title }}
                 </router-link>
               </td>
-              <td class="col-stat">
+              <td class="col-stat" data-label="Views">
                 <a href="#" @click.prevent="openDetails(item.id, 1)">
                   {{ item.views }}
                 </a>
               </td>
-              <td class="col-stat">
+              <td class="col-stat" data-label="Clicks">
                 <a href="#" @click.prevent="openDetails(item.id, 2)">
                   {{ item.clicks || 0 }}
                 </a>
               </td>
-              <td class="col-stat">
+              <td class="col-stat" data-label="Leads">
                 <a href="#" @click.prevent="openDetails(item.id, 3)">
                   {{ item.leads || 0 }}
                 </a>
               </td>
-              <td class="col-stat">
+              <td class="col-stat" data-label="Fraud">
                 <a href="#" @click.prevent="openDetails(item.id, 4)">
                   {{ item.fclicks || 0 }}
                 </a>
               </td>
-              <td class="col-actions">
+              <td class="col-actions" data-label="Actions">
                 <router-link
                   :to="'/campaign/' + item.id"
                   style="margin-right: 8px; color: #888"
@@ -1065,5 +1065,139 @@ export default {
   width: 100% !important;
   height: auto !important;
   max-height: 400px;
+}
+
+@media (max-width: 850px) {
+  .content-wrapper {
+    padding: 0 10px;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+    padding: 20px 0;
+  }
+  .toolbar-left,
+  .toolbar-right,
+  .toolbar-center {
+    width: 100%;
+    justify-content: center;
+    flex: none;
+  }
+  .toolbar-center {
+    order: 3;
+  }
+  .toolbar-right {
+    order: 1;
+  }
+  .date-input {
+    flex: 1;
+    width: 45%;
+  }
+
+  .data-table,
+  .data-table thead,
+  .data-table tbody,
+  .data-table th,
+  .data-table td,
+  .data-table tr {
+    display: block;
+  }
+  .data-table thead {
+    display: none;
+  }
+  .data-table tr {
+    background: #fff;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+  .data-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 8px;
+    border-bottom: 1px solid #f8f9fa;
+    text-align: right;
+    width: auto !important;
+  }
+  .data-table td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 10px;
+    color: #8898aa;
+  }
+  .col-actions {
+    justify-content: center !important;
+    gap: 15px;
+    background: #f8f9fe;
+    border-radius: 8px;
+  }
+
+  .panel {
+    flex-direction: column !important;
+    padding: 10px !important;
+  }
+  .w30.ptb25,
+  .w70-al {
+    width: 100% !important;
+    padding: 10px 0 !important;
+  }
+  .cubes {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px !important;
+  }
+  .cubes > div {
+    border-radius: 8px !important;
+    margin: 0 !important;
+  }
+
+  .body {
+    flex-direction: column !important;
+    padding: 10px !important;
+  }
+  .body .w30.filchart,
+  .body .w70 {
+    width: 100% !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+  .filchart {
+    order: 2;
+    text-align: left;
+    margin-top: 20px;
+  }
+  .itemchart {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 15px;
+    padding: 10px 0;
+    border-bottom: 1px dashed #eee;
+  }
+  #chartOuter {
+    order: 1;
+    height: auto !important;
+  }
+  #myChart {
+    max-height: 250px !important;
+  }
+
+  .btn-primary {
+    width: 88%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 400px) {
+  .cubes {
+    grid-template-columns: 1fr;
+  }
+  .page-title {
+    font-size: 18px;
+  }
 }
 </style>

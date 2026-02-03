@@ -222,7 +222,7 @@ export default {
           </thead>
           <tbody>
             <tr v-for="item in data.items" :key="item.id">
-              <td class="col-toggle">
+              <td class="col-toggle" data-label="Status">
                 <Toogle
                   :modelValue="item.published"
                   @update:modelValue="
@@ -231,18 +231,16 @@ export default {
                   "
                 />
               </td>
-              <td class="col-title">{{ item.site }}</td>
-              <td class="col-stat">{{ item.views }}</td>
-              <td class="col-stat">
+              <td class="col-title" data-label="Site">{{ item.site }}</td>
+              <td class="col-stat" data-label="Views">{{ item.views }}</td>
+              <td class="col-stat" data-label="Clicks">
                 {{ item.clicks || 0 }}
               </td>
-              <td class="col-stat">
-                {{ item.leads || 0 }}
-              </td>
-              <td class="col-stat">
-                <span :class="{ 'text-danger': item.fclicks > 0 }">
-                  {{ item.fclicks || 0 }}
-                </span>
+              <td class="col-stat" data-label="Leads">{{ item.leads || 0 }}</td>
+              <td class="col-stat" data-label="Fraud">
+                <span :class="{ 'text-danger': item.fclicks > 0 }">{{
+                  item.fclicks || 0
+                }}</span>
               </td>
             </tr>
           </tbody>
@@ -300,11 +298,6 @@ export default {
   outline: none;
 }
 
-.date-separator {
-  margin: 0 10px;
-  color: #888;
-}
-
 .table-container {
   background: #fff;
   border-radius: 12px;
@@ -337,78 +330,95 @@ export default {
   vertical-align: middle;
 }
 
-.data-table tr:hover {
-  background-color: #f8f9fe;
-}
+@media (max-width: 768px) {
+  .content-wrapper {
+    padding: 0 10px;
+  }
 
-.col-toggle {
-  width: 60px;
-  text-align: center;
-}
-.col-stat {
-  text-align: center;
-  width: 100px;
-}
-.col-title {
-  font-weight: 600;
-  color: #32325d;
+  .toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px 0;
+    gap: 15px;
+  }
+
+  .date-group {
+    width: 100%;
+    justify-content: space-between;
+    box-sizing: border-box;
+  }
+
+  .date-input {
+    flex: 1;
+    min-width: 0;
+    width: 45%;
+  }
+
+  .data-table,
+  .data-table thead,
+  .data-table tbody,
+  .data-table th,
+  .data-table td,
+  .data-table tr {
+    display: block;
+  }
+
+  .data-table thead {
+    display: none;
+  }
+
+  .data-table tr {
+    margin-bottom: 15px;
+    border: 1px solid #edf2f7;
+    border-radius: 10px;
+    background: #fff;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+  }
+
+  .data-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f8f9fa;
+    padding: 10px 5px;
+    text-align: right;
+    width: auto !important;
+  }
+
+  .data-table td:last-child {
+    border-bottom: none;
+  }
+
+  .data-table td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 11px;
+    color: #8898aa;
+    float: left;
+    margin-right: 10px;
+  }
+
+  .col-toggle {
+    order: -1;
+    background: #fcfcfc;
+    border-radius: 8px;
+    margin-bottom: 5px;
+  }
 }
 
 .text-danger {
   color: #f5365c;
   font-weight: bold;
 }
-
-.empty-state {
-  text-align: center;
-  padding: 60px;
-  color: #8898aa;
-  background: #fff;
-  border-radius: 12px;
-}
-
-.form-container {
-  padding: 15px;
-}
-.form-group {
-  margin-bottom: 15px;
-}
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 600;
-}
-.text-input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  box-sizing: border-box;
-}
-
 .btn-primary {
   background-color: #00d68f;
   color: #fff;
   border: none;
   padding: 10px 20px;
   border-radius: 6px;
-  font-weight: 600;
   cursor: pointer;
-}
-
-#spinner {
-  position: fixed;
-  top: 0;
-  left: 0;
   width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
-#spinner img {
-  width: 64px;
 }
 </style>
